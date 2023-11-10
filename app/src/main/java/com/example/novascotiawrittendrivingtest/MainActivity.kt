@@ -1,10 +1,10 @@
 package com.example.novascotiawrittendrivingtest
-
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -28,40 +28,46 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        createLocationRequest()
 
+        createLocationRequest()
+        setupLocationCallback()
+    }
+
+    private fun setupLocationCallback() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
-                for (location in locationResult.locations) {
-                    // Check the location's accuracy here
-                    if (location.accuracy < 100) { // Use a threshold for accuracy as needed
-                        lastKnownLocation = location
-                        val currentLatLng = LatLng(location.latitude, location.longitude)
-                        mMap.clear()
-                        mMap.addMarker(MarkerOptions().position(currentLatLng).title("Current Location"))
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
-                        break // Exit the loop once you get a good location
-                    }
-                }
+                lastKnownLocation = locationResult.lastLocation
+                updateUIWithLocation(lastKnownLocation)
             }
+        }
+    }
+
+    private fun updateUIWithLocation(location: Location?) {
+        location?.let {
+            val currentLatLng = LatLng(it.latitude, it.longitude)
+            mMap.clear()
+            mMap.addMarker(MarkerOptions().position(currentLatLng).title("Current Location"))
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+        }
+    }
+
+    private fun createLocationRequest() {
+        locationRequest = LocationRequest.create().apply {
+            interval = 10000
+            fastestInterval = 5000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         updateLocationUI()
-    }
-
-    private fun createLocationRequest() {
-        locationRequest = LocationRequest.create().apply {
-            interval = 10000 // Update location every 10 seconds
-            fastestInterval = 5000 // If location is available sooner you can use it (e.g. another app is using the location)
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
     }
 
     private fun updateLocationUI() {
@@ -88,12 +94,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 locationCallback,
                 Looper.getMainLooper()
             )
+        } else {
+            Toast.makeText(this, "Location permission not granted", Toast.LENGTH_SHORT).show()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        updateLocationUI()
+        startLocationUpdates()
     }
 
     override fun onPause() {
@@ -112,9 +120,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 updateLocationUI()
+            } else {
+                Toast.makeText(this, "Location permission not granted", Toast.LENGTH_SHORT).show()
             }
         }
     }
 }
+
+

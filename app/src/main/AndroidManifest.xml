@@ -16,6 +16,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NovaScotiaWrittenDrivingTest"
         tools:targetApi="32">
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBbySywOi2V2XWFMGLGenn10k0f-7AMh-Y"/>
