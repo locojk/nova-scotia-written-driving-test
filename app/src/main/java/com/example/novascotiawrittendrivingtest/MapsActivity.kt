@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -16,6 +17,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+//import com.google.android.libraries.places.api.Places
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -34,6 +36,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        //zihao未完成
+//
+//        if (!Places.isInitialized()) {
+//            Places.initialize(applicationContext, "AIzaSyCYj5-AIzaSyALcZOTrN3FbNBhTLYUkIFQ3XSQmQkCLXY")
+//        }
+
+
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         createLocationRequest()
@@ -44,9 +54,62 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 lastKnownLocation = locationResult.lastLocation
+                Log.d("LocationUpdate", "Location updated: $lastKnownLocation") // Debugging log
                 updateUIWithLocation(lastKnownLocation)
+                findNearestDrivingSchool()
             }
         }
+    }
+
+    private fun onLocationResult(locationResult: LocationResult) {
+        lastKnownLocation = locationResult.lastLocation
+        Log.d("LocationUpdate", "Location updated: $lastKnownLocation")
+        updateUIWithLocation(lastKnownLocation)
+        findNearestDrivingSchool() // This is the correct place to call it
+    }
+
+    private fun findNearestDrivingSchool() {
+        if (!::mMap.isInitialized) {
+            Log.d("DEBUG", "Map is not initialized yet.") // Debugging log
+            return // mMap not initialized, return early
+        }
+        if (lastKnownLocation == null) {
+            Log.d("DEBUG", "Last known location is null.") // Debugging log
+            return // Location not determined, return early
+        }
+        if (!::mMap.isInitialized) {
+            return // mMap not initialized, return early
+        }
+        val drivingSchools = listOf(
+            // Replace this with actual driving school data
+            LatLng(44.6465, -63.5926), // Example location in Nova Scotia
+            LatLng(44.6407, -63.5696),
+            LatLng(44.6675, -63.5630),
+            LatLng(44.6499, -63.6099),
+            LatLng(44.6521, -63.6502),
+        )
+
+        val nearestSchool = drivingSchools.minByOrNull { schoolLatLng ->
+            lastKnownLocation?.let { currentLocation ->
+                val results = FloatArray(6)
+                Location.distanceBetween(
+                    currentLocation.latitude,
+                    currentLocation.longitude,
+                    schoolLatLng.latitude,
+                    schoolLatLng.longitude,
+                    results
+                )
+                results[0]
+            } ?: Float.MAX_VALUE
+        }
+        nearestSchool?.let {
+            // Debugging: Log the LatLng of the nearest school
+            Log.d("DEBUG", "Nearest school: ${it.latitude}, ${it.longitude}")
+            // Update the UI to show the nearest driving school
+            mMap.addMarker(MarkerOptions().position(it).title("Nearest Driving School"))
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
+        } ?: Log.d("DEBUG", "No nearest school found")
+
     }
 
     private fun updateUIWithLocation(location: Location?) {
@@ -67,6 +130,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         updateLocationUI()
+        lastKnownLocation?.let {
+            findNearestDrivingSchool()
+        }
     }
 
     private fun updateLocationUI() {
