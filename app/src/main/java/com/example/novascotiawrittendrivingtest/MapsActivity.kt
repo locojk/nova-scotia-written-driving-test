@@ -87,11 +87,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             LatLng(44.6675, -63.5630),
             LatLng(44.6499, -63.6099),
             LatLng(44.6521, -63.6502),
+            LatLng(44.636076, -63.5960803)
         )
 
         val nearestSchool = drivingSchools.minByOrNull { schoolLatLng ->
             lastKnownLocation?.let { currentLocation ->
-                val results = FloatArray(6)
+                val results = FloatArray(7)
                 Location.distanceBetween(
                     currentLocation.latitude,
                     currentLocation.longitude,
