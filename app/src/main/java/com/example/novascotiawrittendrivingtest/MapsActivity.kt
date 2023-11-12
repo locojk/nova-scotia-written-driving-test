@@ -36,12 +36,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        //zihao未完成
-//
-//        if (!Places.isInitialized()) {
-//            Places.initialize(applicationContext, "AIzaSyCYj5-AIzaSyALcZOTrN3FbNBhTLYUkIFQ3XSQmQkCLXY")
-//        }
-
 
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
