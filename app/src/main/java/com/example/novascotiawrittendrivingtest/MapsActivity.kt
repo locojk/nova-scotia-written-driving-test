@@ -113,7 +113,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.d("DEBUG", "Nearest school: ${it.latitude}, ${it.longitude}")
             // Update the UI to show the nearest driving school
             mMap.addMarker(MarkerOptions().position(it).title("Nearest Driving School"))
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 11f))
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 12f))
         } ?: Log.d("DEBUG", "No nearest school found")
     }
 
@@ -122,7 +122,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val currentLatLng = LatLng(it.latitude, it.longitude)
             mMap.clear()
             mMap.addMarker(MarkerOptions().position(currentLatLng).title("Current Location"))
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 11f))
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12f))
         }
     }
 
