@@ -1,11 +1,13 @@
 package com.example.novascotiawrittendrivingtest
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -37,11 +39,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
 
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         createLocationRequest()
         setupLocationCallback()
+
+
+        val backButton = findViewById<Button>(R.id.backButton)
+        backButton.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun setupLocationCallback() {
@@ -76,17 +85,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         val drivingSchools = listOf(
             // Replace this with actual driving school data
-            LatLng(44.6465, -63.5926), // Example location in Nova Scotia
-            LatLng(44.6407, -63.5696),
-            LatLng(44.6675, -63.5630),
-            LatLng(44.6499, -63.6099),
-            LatLng(44.6521, -63.6502),
-            LatLng(44.636076, -63.5960803)
+//            LatLng(44.6465, -63.5926), // Example location in Nova Scotia
+//            LatLng(44.6407, -63.5696),
+//            LatLng(44.6675, -63.5630),
+//            LatLng(44.6499, -63.6099),
+//            LatLng(44.6521, -63.6502),
+//            LatLng(44.636076, -63.5960803)
+            LatLng(44.3484, -78.7605), // Example location in Nova Scotia
+            LatLng(44.6921, -63.5307)
         )
 
         val nearestSchool = drivingSchools.minByOrNull { schoolLatLng ->
             lastKnownLocation?.let { currentLocation ->
-                val results = FloatArray(7)
+                val results = FloatArray(6)
                 Location.distanceBetween(
                     currentLocation.latitude,
                     currentLocation.longitude,
@@ -102,9 +113,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.d("DEBUG", "Nearest school: ${it.latitude}, ${it.longitude}")
             // Update the UI to show the nearest driving school
             mMap.addMarker(MarkerOptions().position(it).title("Nearest Driving School"))
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 11f))
         } ?: Log.d("DEBUG", "No nearest school found")
-
     }
 
     private fun updateUIWithLocation(location: Location?) {
@@ -112,7 +122,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val currentLatLng = LatLng(it.latitude, it.longitude)
             mMap.clear()
             mMap.addMarker(MarkerOptions().position(currentLatLng).title("Current Location"))
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 11f))
         }
     }
 
